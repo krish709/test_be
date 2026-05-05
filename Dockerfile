@@ -1,9 +1,16 @@
-FROM eclipse-temurin:17-jdk-alpine
+FROM gradle:8-jdk17 AS build
 
 WORKDIR /app
-
 COPY . .
 
+RUN chmod +x gradlew
 RUN ./gradlew build -x test
 
-CMD ["java", "-jar", "build/libs/demo-0.0.1-SNAPSHOT.jar"] 
+FROM eclipse-temurin:17-jdk
+
+WORKDIR /app
+COPY --from=build /app/build/libs/*.jar app.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
